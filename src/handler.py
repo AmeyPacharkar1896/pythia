@@ -46,7 +46,7 @@ class OracleHandler(FileSystemEventHandler):
         if "New Text Document" in filename: return 
         
         # 2. Valid Extensions
-        valid_exts = ['.txt', '.py', '.js', '.html', '.css', '.md', '.json', '.sql']
+        valid_exts = ['.txt', '.py', '.js', '.html', '.css', '.md', '.json', '.sql', '.mermaid']
         _, ext = os.path.splitext(filename)
         if ext.lower() not in valid_exts: return
 
@@ -58,10 +58,33 @@ class OracleHandler(FileSystemEventHandler):
 
         # LOGIC: Empty File = Prompt. Full File = Memory/Edit.
         if size == 0 and event_type == "created":
-            print(f"\n🔮 [PROMPT] '{filename}'")
-            self._fulfill_prophecy(file_path, filename, ext)
+            if ext == ".mermaid":
+                # 1. Find the source code file with the same name
+                source_file = None
+                folder = os.path.dirname(file_path)
+                base_name = os.path.splitext(filename)[0] # e.g. "Find_Treasure_v2"
+                
+                # Check for matching code files
+                for possible_ext in ['.py', '.js', '.html', '.css', '.sql', '.json']:
+                    possible_path = os.path.join(folder, base_name + possible_ext)
+                    if os.path.exists(possible_path):
+                        source_file = possible_path
+                        break
+                
+                if source_file:
+                    print(f"\n🎨 [VISUALIZE] Generating diagram for '{os.path.basename(source_file)}'")
+                    self._generate_diagram(file_path, source_file)
+                else:
+                    print(f"\n⚠️ [ERROR] Could not find source code for '{filename}'.")
+                    print(f"   Make sure a file like '{base_name}.py' exists.")
+
+            else:
+                # Normal Generation
+                print(f"\n🔮 [PROMPT] '{filename}'")
+                self._fulfill_prophecy(file_path, filename, ext)
         
         elif size > 0:
+            if ext == ".mermaid": return
             try:
                 # 🟢 FIXED: The Try block now has logic and an except block
                 with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
@@ -135,3 +158,20 @@ class OracleHandler(FileSystemEventHandler):
             print(f"✅ [SUCCESS] Written to {filename}")
         except Exception as e:
             print(f"🛑 Generation Error: {e}")
+
+    def _generate_diagram(self, diagram_path, source_path):
+        try:
+            # 1. Read the source code
+            with open(source_path, 'r', encoding='utf-8') as f:
+                code_content = f.read()
+
+            # 2. Ask Brain to Visualize
+            diagram_code = self.brain.visualize(os.path.basename(source_path), code_content)
+
+            # 3. Save the Mermaid file
+            with open(diagram_path, 'w', encoding='utf-8') as f:
+                f.write(diagram_code)
+            
+            print(f"✅ [SUCCESS] Diagram generated: {os.path.basename(diagram_path)}")
+        except Exception as e:
+            print(f"🛑 Error: {e}")

@@ -78,3 +78,28 @@ class Brain:
             return self._clean_text(response.text)
         except Exception as e:
             return f"# Error refactoring content: {e}"
+
+    def visualize(self, target_filename, code_content):
+        """Generates a Mermaid.js diagram from code."""
+
+        full_prompt = (
+            f"You are a Systems Architect. Your goal is to visualize code logic.\n"
+            f"--------------------------------------------------\n"
+            f"TASK: Analyze the code below and generate a Mermaid.js diagram.\n"
+            f"INSTRUCTIONS:\n"
+            f"1. Use 'graph TD' (Top-Down) for flowcharts.\n"
+            f"2. IMPORTANT: Wrap ALL node text in double quotes to prevent syntax errors.\n"
+            f"   - BAD:  A[Start (Init)]\n"
+            f"   - GOOD: A[\"Start (Init)\"]\n"
+            f"3. Keep it simple and high-level (show relationships, not every line of code).\n"
+            f"4. Output ONLY the mermaid code. No markdown blocks.\n"
+            f"--------------------------------------------------\n"
+            f"CODE TO ANALYZE ({target_filename}):\n{code_content}\n"
+        )
+
+        try:
+            print(f"   🧠 Brain visualizing {target_filename}...")
+            response = model.generate_content(full_prompt)
+            return self._clean_text(response.text)
+        except Exception as e:
+            return f"%% Error generating diagram: {e}"
