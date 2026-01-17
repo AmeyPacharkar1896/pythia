@@ -14,6 +14,7 @@ It feels less like coding and more like summoning data from the void.
 * **Instant Code Generation:** Create a file named `Calculator.py`, and it becomes a working calculator script.
 * **🧠 Hive Mind (RAG):** Powered by **ChromaDB**, Pythia has long-term memory. It reads and "memorizes" every file in your folder. A new file can reference variables, passwords, or logic from existing files automatically.
 * **✨ Living Files (Conversational Editing):** "Talk" to your code. Add a comment like `# UPDATE: Switch to SQLite` inside a file, save it, and Pythia will rewrite the code to match your instruction.
+* **🎨 The Vizier (Auto-Diagramming):** Create a `.mermaid` file named after your code (e.g. `Game.mermaid`), and Pythia will read your code and generate a system flowchart automatically.
 * **Polyglot Support:** Detects file extensions to switch personalities:
     * `.py` → Python Engineer (Runnable code)
     * `.html` → Frontend Dev (Single-file website)
@@ -35,7 +36,7 @@ It feels less like coding and more like summoning data from the void.
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/AmeyPacharkar1896/pythia.git
+    git clone [https://github.com/AmeyPacharkar1896/pythia.git](https://github.com/AmeyPacharkar1896/pythia.git)
     cd pythia
     ```
 
@@ -84,6 +85,12 @@ It feels less like coding and more like summoning data from the void.
 * **Save the file.**
 * Watch as Pythia rewrites the code in real-time to apply your change.
 
+### Mode 4: Visualization (The Vizier)
+* You have a complex code file (e.g., `Find_Treasure.py`).
+* Create a new empty file with the **same name** but `.mermaid` extension: `Find_Treasure.mermaid`.
+* Pythia scans the Python code and generates a flowchart inside the `.mermaid` file.
+* Use a VS Code extension (like "Mermaid Preview") to see the graph.
+
 ---
 
 ## 📂 Supported Extensions
@@ -98,6 +105,7 @@ It feels less like coding and more like summoning data from the void.
 | **.json** | Data Scientist | Valid, structured JSON data. |
 | **.md** | Tech Writer | Rich text with headers and lists. |
 | **.sql** | DB Admin | Standard SQL queries. |
+| **.mermaid**| Systems Architect | Flowcharts & Class Diagrams. |
 
 ---
 
@@ -106,7 +114,7 @@ It feels less like coding and more like summoning data from the void.
 * [x] **v1.0:** Basic Watchdog & Extension Support.
 * [x] **v2.0 (Hive Mind):** RAG implementation with ChromaDB (Vector Memory).
 * [x] **v2.1 (Living Files):** Conversational Editing (Refactoring via comments).
-* [ ] **v2.2 (The Vizier):** Support for generating diagrams (`.mermaid`) from code.
+* [x] **v2.2 (The Vizier):** Support for generating diagrams (`.mermaid`) from code.
 * [ ] **v3.0 (The Forger):** Support for image generation (`.png`, `.jpg`).
 
 ---
