@@ -1,23 +1,26 @@
+# src/config.py
 import os
 from dotenv import load_dotenv
 
-# Load env variables once
 load_dotenv()
 
+# 🔑 Secrets
 API_KEY = os.getenv("GEMINI_API_KEY")
-TARGET_FOLDER = os.getenv("TARGET_FOLDER")
-DB_PATH = "./pythia_memory" 
 
-# Validation
-if not API_KEY:
-    raise ValueError("🛑 API Key missing! Check your .env file.")
+# ⚙️ Settings
+MOCK_MODE = True
+MODEL_NAME = "gemini-2.0-flash" 
+TEMPERATURE = 0.4
+MAX_RETRIES = 3
+RETRY_DELAY_BASE = 30
 
-if not TARGET_FOLDER:
-    # Default to Desktop
-    desktop = os.path.join(os.path.expanduser("~"), "Desktop")
-    TARGET_FOLDER = os.path.join(desktop, "Oracle_Files")
+# 📂 Filesystem
+TARGET_FOLDER = "D:/Oracle_Files"
+BACKUP_FOLDER = ".pythia_history"
+DB_PATH = "pythia_memory"  
 
-# Ensure folders exist
-if not os.path.exists(TARGET_FOLDER):
-    os.makedirs(TARGET_FOLDER)
-    print(f"📂 Created target folder: {TARGET_FOLDER}")
+# 📝 Extensions
+VALID_EXTENSIONS = [
+    '.txt', '.py', '.js', '.html', '.css', 
+    '.md', '.json', '.sql', '.mermaid'
+]

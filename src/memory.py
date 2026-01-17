@@ -1,59 +1,50 @@
+import os
 import chromadb
-from chromadb import Documents, EmbeddingFunction, Embeddings
-import google.generativeai as genai
-from src.config import DB_PATH, API_KEY
-
-# Configure Embedding Model
-genai.configure(api_key=API_KEY)
-
-class GeminiEmbeddingFn(EmbeddingFunction):
-    def __call__(self, input: Documents) -> Embeddings:
-        # Uses the specialized embedding model
-        response = genai.embed_content(
-            model="models/text-embedding-004",
-            content=input,
-            task_type="retrieval_document",
-            title="Oracle Document"
-        )
-        return response['embedding']
+from typing import Dict, Any, List, Optional
+from src.config import DB_PATH
+from src.logger import logger
 
 class MemoryEngine:
-    def __init__(self):
-        print("🧠 Initializing Vector Memory...")
-        self.client = chromadb.PersistentClient(path=DB_PATH)
-        self.collection = self.client.get_or_create_collection(
-            name="oracle_knowledge",
-            embedding_function=GeminiEmbeddingFn()
-        )
+    def __init__(self) -> None:
+        try:
+            self.client = chromadb.PersistentClient(path=DB_PATH)
+            self.collection = self.client.get_or_create_collection(
+                name="oracle_knowledge",
+                metadata={"hnsw:space": "cosine"}
+            )
+            logger.debug(f"🧠 [MEMORY] Connected to database at {DB_PATH}")
+        
+        except Exception as e:
+            logger.critical(f"🔥 [MEMORY CRASH] Could not load database: {e}")
 
-    def memorize(self, filename, text):
-        """Saves text to the vector DB."""
-        # Chunking limit (simple version)
-        text_chunk = text[:8000] 
+    def memorize(self, filename: str, content: str) -> None:
+        """Saves file content into the vector database."""
         try:
             self.collection.upsert(
-                documents=[text_chunk],
+                documents=[content],
                 metadatas=[{"filename": filename}],
                 ids=[filename]
             )
-            print(f"   ✅ [MEMORY] Saved '{filename}' to database.")
+            logger.info(f"✅ [MEMORY] Learned contents of '{filename}'")
         except Exception as e:
-            print(f"   🛑 [MEMORY ERROR] {e}")
+            logger.error(f"⚠️ [MEMORY ERROR] Failed to memorize {filename}: {e}")
 
-    def recall(self, query, n_results=3):
-        """Retrieves relevant documents."""
-        results = self.collection.query(
-            query_texts=[query],
-            n_results=n_results
-        )
-        return results
-
-    def forget(self, filename):
-        """Removes a file from the vector database."""
+    def forget(self, filename: str) -> None:
+        """Removes a file from memory."""
         try:
-            # We use the filename as the ID (since we kept it simple)
             self.collection.delete(ids=[filename])
-            print(f"   🗑️ [MEMORY] Forgot '{filename}'")
+            logger.warning(f"🗑️ [MEMORY] Forgot '{filename}'")
         except Exception as e:
-            # It's okay if we try to delete something that doesn't exist
-            print(f"   ⚠️ [MEMORY] Could not forget '{filename}': {e}")
+            logger.error(f"⚠️ [MEMORY ERROR] Failed to forget {filename}: {e}")
+
+    def recall(self, query: str, n_results: int = 2) -> Dict[str, Any]:
+        """Finds relevant code/text based on a query."""
+        try:
+            results = self.collection.query(
+                query_texts=[query],
+                n_results=n_results
+            )
+            return results
+        except Exception as e:
+            logger.error(f"⚠️ [MEMORY ERROR] Recall failed: {e}")
+            return {'documents': [], 'metadatas': []}
