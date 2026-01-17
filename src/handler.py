@@ -11,10 +11,9 @@ class OracleHandler(FileSystemEventHandler):
     def __init__(self):
         self.memory = MemoryEngine()
         self.brain = Brain()
-        self.last_hash = {} # Stores the hash of the last file we wrote
+        self.last_hash = {} 
 
     def _get_file_hash(self, content):
-        """Creates a unique fingerprint for text content."""
         return hashlib.md5(content.encode('utf-8')).hexdigest()
 
     def on_created(self, event):
@@ -29,7 +28,7 @@ class OracleHandler(FileSystemEventHandler):
     def on_deleted(self, event):
         if event.is_directory: return
         filename = os.path.basename(event.src_path)
-        if filename in self.last_hash: del self.last_hash[filename] # Clean up hash
+        if filename in self.last_hash: del self.last_hash[filename]
         
         valid_exts = ['.txt', '.py', '.js', '.html', '.css', '.md', '.json', '.sql']
         _, ext = os.path.splitext(filename)
@@ -58,7 +57,7 @@ class OracleHandler(FileSystemEventHandler):
         except OSError:
             return
 
-        # 1. NEW FILE -> GENERATE
+        # 1. NEW FILE
         if size == 0 and event_type == "created":
             if ext == ".mermaid":
                 self._handle_visualization(file_path, filename)
@@ -66,22 +65,20 @@ class OracleHandler(FileSystemEventHandler):
                 print(f"\n🔮 [PROMPT] '{filename}'")
                 self._fulfill_prophecy(file_path, filename, ext)
         
-        # 2. EXISTING FILE -> CHECK CONTENT
+        # 2. EXISTING FILE
         elif size > 0:
             if ext == ".mermaid": return
             try:
                 with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
                     content = f.read()
 
-                # 🛑 ANTI-LOOP CHECK
+                # Anti-Loop Check
                 current_hash = self._get_file_hash(content)
                 if self.last_hash.get(filename) == current_hash:
-                    # We just wrote this file, ignore the event
                     return
 
                 if "The Oracle is" in content[:100]: return
 
-                # Check Commands
                 lines = content.strip().split('\n')
                 last_line = lines[-1].strip() if lines else ""
 
@@ -150,8 +147,6 @@ class OracleHandler(FileSystemEventHandler):
             with open(source_path, 'r', encoding='utf-8') as f:
                 code_content = f.read()
             diagram_code = self.brain.visualize(os.path.basename(source_path), code_content)
-            
-            # We don't hash check diagrams since we don't watch them
             with open(diagram_path, 'w', encoding='utf-8') as f:
                 f.write(diagram_code)
             print(f"✅ [SUCCESS] Diagram generated.")
@@ -194,20 +189,29 @@ class OracleHandler(FileSystemEventHandler):
             backups.sort()
             latest_backup = backups[-1]
             
+            # Read backup content
             with open(os.path.join(history_dir, latest_backup), 'r', encoding='utf-8', errors='ignore') as f:
                 content = f.read()
 
-            # 🟢 ROBUST CLEANING: Remove ALL trailing commands/empty lines
+            # DEBUG: Prove what we found
+            print(f"   🔎 [DEBUG] Reading backup: {latest_backup}")
+            print(f"   🔎 [DEBUG] Backup size: {len(content)} bytes")
+
+            # Clean content
             lines = content.split('\n')
             while lines:
                 last_line = lines[-1].strip()
                 if not last_line or "UPDATE:" in last_line or "ROLLBACK" in last_line:
-                    lines.pop() # Remove it
+                    lines.pop() 
                 else:
-                    break # Stop when we hit real code
+                    break 
             
             cleaned_content = "\n".join(lines)
             
+            # 🛑 CRITICAL FIX: WAIT FOR VS CODE TO RELEASE FILE HANDLE
+            print(f"   ⏳ Waiting for editor to release file...")
+            time.sleep(0.5)
+
             self._write_safe(file_path, filename, cleaned_content)
             print(f"   ⏪ [ROLLBACK] Restored {filename} from {latest_backup} (Cleaned)")
 
@@ -215,12 +219,8 @@ class OracleHandler(FileSystemEventHandler):
             print(f"   🛑 Rollback failed: {e}")
 
     def _write_safe(self, file_path, filename, content):
-        """Writes to file and remembers the hash to prevent loops."""
-        # 1. Calculate Hash
         content_hash = self._get_file_hash(content)
         self.last_hash[filename] = content_hash
-        
-        # 2. Write
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(content)
     
