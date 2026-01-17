@@ -1,5 +1,6 @@
 import google.generativeai as genai
 from src.config import API_KEY
+from src.prompts import PERSONAS, DEFAULT_PERSONA, GENERATE_TEMPLATE, REFACTOR_TEMPLATE, VISUALIZE_TEMPLATE
 import time
 
 # 🟢 CONFIG: Toggle this to True if you want to test without using API credits
@@ -15,72 +16,37 @@ if not MOCK_MODE:
 
 class Brain:
     def generate(self, filename, file_ext, context_str=""):
-        # 1. Check for Mock Mode
-        if MOCK_MODE:
-            return self._get_mock_content(filename, file_ext)
+        if MOCK_MODE: return self._get_mock_content(filename, file_ext)
 
-        # 2. Real AI Logic
-        system_instruction = self._get_persona(file_ext)
-        full_prompt = (
-            f"{system_instruction}\n"
-            f"--------------------------------------------------\n"
-            f"CONTEXT (Background Information):\n{context_str}\n"
-            f"--------------------------------------------------\n"
-            f"TASK: Write the code for a file named '{filename}'.\n"
-            f"INSTRUCTIONS:\n"
-            f"1. Use the variables/data from the CONTEXT above if relevant.\n"
-            f"2. You MUST write valid {file_ext} code. Do NOT just copy the context text.\n"
-            f"3. Example: If context says 'Port: 80', your Python code should be 'PORT = 80'.\n"
-            f"4. Output ONLY the code. No markdown formatting (no ```)."
+        persona = PERSONAS.get(file_ext, DEFAULT_PERSONA)
+        full_prompt = GENERATE_TEMPLATE.format(
+            system_instruction=persona,
+            context_str=context_str,
+            filename=filename,
+            file_ext=file_ext
         )
-
         return self._call_ai(full_prompt, filename, action="generating logic")
 
-    def refactor(self, filename, file_ext, current_content, instructions):
-        # 1. Check for Mock Mode
-        if MOCK_MODE:
-            return current_content + f"\n\n# REFACTORED: {instructions}"
+    def refactor(self, filename, file_ext, content, instruction):
+        if MOCK_MODE: return content + f"\n\n# REFACTORED: {instruction}"
 
-        # 2. Real AI Logic
-        system_instruction = self._get_persona(file_ext)
-        full_prompt = (
-            f"{system_instruction}\n"
-            f"--------------------------------------------------\n"
-            f"TASK: The user wants to modify the file '{filename}'.\n"
-            f"1. Read the CURRENT CONTENT below.\n"
-            f"2. Follow the USER INSTRUCTIONS at the bottom.\n"
-            f"3. Rewrite the FULL file with the changes applied.\n"
-            f"4. REMOVE the user's instruction comment from the final output.\n"
-            f"5. Output ONLY the code. No markdown.\n"
-            f"--------------------------------------------------\n"
-            f"CURRENT CONTENT:\n{current_content}\n"
-            f"--------------------------------------------------\n"
-            f"USER INSTRUCTIONS:\n{instructions}\n"
+        persona = PERSONAS.get(file_ext, DEFAULT_PERSONA)
+        full_prompt = REFACTOR_TEMPLATE.format(
+            system_instruction=persona,
+            filename=filename,
+            current_content=content,
+            instructions=instruction
         )
-
         return self._call_ai(full_prompt, filename, action="refactoring")
 
     def visualize(self, target_filename, code_content):
-        # 1. Check for Mock Mode
-        if MOCK_MODE:
-            return f'graph TD;\nA["{target_filename}"] --> B["Mock Diagram"];'
+        if MOCK_MODE: return f'graph TD;\nA["{target_filename}"] --> B["Mock Diagram"];'
 
-        # 2. Real AI Logic
-        full_prompt = (
-            f"You are a Systems Architect. Your goal is to visualize code logic.\n"
-            f"--------------------------------------------------\n"
-            f"TASK: Analyze the code below and generate a Mermaid.js diagram.\n"
-            f"INSTRUCTIONS:\n"
-            f"1. Use 'graph TD' (Top-Down) for flowcharts.\n"
-            f"2. IMPORTANT: Wrap ALL node text in double quotes to prevent syntax errors.\n"
-            f"   - BAD:  A[Start (Init)]\n"
-            f"   - GOOD: A[\"Start (Init)\"]\n"
-            f"3. Keep it simple and high-level (show relationships, not every line of code).\n"
-            f"4. Output ONLY the mermaid code. No markdown blocks.\n"
-            f"--------------------------------------------------\n"
-            f"CODE TO ANALYZE ({target_filename}):\n{code_content}\n"
+        # 🟢 CLEANER
+        full_prompt = VISUALIZE_TEMPLATE.format(
+            target_filename=target_filename,
+            code_content=code_content
         )
-
         return self._call_ai(full_prompt, target_filename, action="visualizing")
 
     def _call_ai(self, prompt, filename, action="processing"):
