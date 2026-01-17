@@ -1,3 +1,4 @@
 .env
 Oracle_Files/
 __pycache__/
+pythia_memory/
