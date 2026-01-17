@@ -1,4 +1,13 @@
+# Secrets
 .env
-Oracle_Files/
-__pycache__/
+
+# Pythia Data (Local only)
 pythia_memory/
+Oracle_Files/.pythia_history/
+Oracle_Files/*
+
+# Python stuff
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/

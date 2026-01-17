@@ -8,7 +8,7 @@ load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ⚙️ Settings
-MOCK_MODE = True
+MOCK_MODE = False
 MODEL_NAME = "gemini-2.0-flash" 
 TEMPERATURE = 0.4
 MAX_RETRIES = 3

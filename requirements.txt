@@ -1,3 +1,5 @@
-watchdog 
-google-generativeai 
+watchdog
+google-generativeai
 python-dotenv
+chromadb
+colorlog
