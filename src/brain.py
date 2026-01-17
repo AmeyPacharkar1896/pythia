@@ -51,3 +51,30 @@ class Brain:
             if text.strip().endswith("```"):
                 text = text.rsplit("```", 1)[0]
         return text
+
+    def refactor(self, filename, file_ext, current_content, instructions):
+        """Rewrites an existing file based on user comments."""
+        
+        system_instruction = self._get_persona(file_ext)
+        
+        full_prompt = (
+            f"{system_instruction}\n"
+            f"--------------------------------------------------\n"
+            f"TASK: The user wants to modify the file '{filename}'.\n"
+            f"1. Read the CURRENT CONTENT below.\n"
+            f"2. Follow the USER INSTRUCTIONS at the bottom.\n"
+            f"3. Rewrite the FULL file with the changes applied.\n"
+            f"4. REMOVE the user's instruction comment from the final output.\n"
+            f"5. Output ONLY the code. No markdown.\n"
+            f"--------------------------------------------------\n"
+            f"CURRENT CONTENT:\n{current_content}\n"
+            f"--------------------------------------------------\n"
+            f"USER INSTRUCTIONS:\n{instructions}\n"
+        )
+
+        try:
+            print(f"   🧠 Brain refactoring {filename}...")
+            response = model.generate_content(full_prompt)
+            return self._clean_text(response.text)
+        except Exception as e:
+            return f"# Error refactoring content: {e}"
