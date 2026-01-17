@@ -11,9 +11,8 @@ model = genai.GenerativeModel(
 class Brain:
     def generate(self, filename, file_ext, context_str=""):
         system_instruction = self._get_persona(file_ext)
-        prompt_topic = filename.replace("_", " ").replace(file_ext, "")
-
-        # 🚀 UPGRADED PROMPT: Forces the AI to convert data into code
+        
+        # ... (keep your full_prompt definition here) ...
         full_prompt = (
             f"{system_instruction}\n"
             f"--------------------------------------------------\n"
@@ -27,12 +26,26 @@ class Brain:
             f"4. Output ONLY the code. No markdown formatting (no ```)."
         )
 
-        try:
-            print(f"   🧠 Brain generating logic for {filename}...")
-            response = model.generate_content(full_prompt)
-            return self._clean_text(response.text)
-        except Exception as e:
-            return f"# Error generating content: {e}"
+        # 🔄 ROBUST RETRY LOOP
+        import time
+        max_retries = 3
+        
+        for attempt in range(max_retries):
+            try:
+                print(f"   🧠 Brain generating logic for {filename}...")
+                response = model.generate_content(full_prompt)
+                return self._clean_text(response.text)
+            
+            except Exception as e:
+                error_msg = str(e)
+                if "429" in error_msg:
+                    wait_time = 30 * (attempt + 1) # Wait 30s, then 60s, etc.
+                    print(f"   ⏳ Rate limit hit. Cooling down for {wait_time}s...")
+                    time.sleep(wait_time)
+                else:
+                    return f"# Error generating content: {e}"
+        
+        return "# Error: Failed after max retries."
 
     def _get_persona(self, ext):
         if ext == ".py": return "You are a Senior Python Engineer. Write clean, runnable code."
