@@ -1,18 +1,17 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from src.brain import Brain
+from src.services.brain import Brain
+from src.services.prompts import PERSONAS, DEFAULT_PERSONA
 
 # 1. Test Persona Logic
-def test_get_persona():
-    brain = Brain()
-    
-    # UPDATED: Matches your actual code strings
-    assert "Senior Python Engineer" in brain._get_persona(".py")
-    assert "Frontend Developer" in brain._get_persona(".html")
-    assert "Data Engineer" in brain._get_persona(".json")
+def test_persona_mapping():
+    # Test that personas are correctly mapped for different file extensions
+    assert "Senior Python Engineer" in PERSONAS.get(".py", "")
+    assert "Frontend Developer" in PERSONAS.get(".html", "")
+    assert "Data Engineer" in PERSONAS.get(".json", "")
     
     # Test fallback
-    assert "helpful AI assistant" in brain._get_persona(".unknown_extension")
+    assert DEFAULT_PERSONA == "You are a helpful AI assistant."
 
 # 2. Test Text Cleaning
 def test_clean_text():
@@ -24,7 +23,7 @@ def test_clean_text():
     assert cleaned.strip() == "print('Hello')"
 
 # 3. Test Generation (Fixed Mocking)
-@patch('src.brain.model') # <--- Patch the GLOBAL model variable in src.brain
+@patch('src.services.brain.model') # <--- Patch the GLOBAL model variable in src.services.brain
 def test_generate_calls_api_correctly(mock_model):
     # SETUP: Create the fake response
     mock_response = MagicMock()

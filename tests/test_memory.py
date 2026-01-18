@@ -1,18 +1,18 @@
 import pytest
-from unittest.mock import MagicMock, patch, ANY # <--- Added ANY
-from src.memory import MemoryEngine
+from unittest.mock import MagicMock, patch
+from src.services.memory import MemoryEngine
 
-@patch('src.memory.chromadb.PersistentClient') 
+@patch('src.services.memory.chromadb.PersistentClient') 
 def test_memory_initialization(mock_client):
     memory = MemoryEngine()
     
     # Did we try to create a collection?
     mock_client.return_value.get_or_create_collection.assert_called_with(
         name="oracle_knowledge",
-        embedding_function=ANY # <--- Fixed this line
+        metadata={"hnsw:space": "cosine"}
     )
 
-@patch('src.memory.chromadb.PersistentClient')
+@patch('src.services.memory.chromadb.PersistentClient')
 def test_memorize_calls_upsert(mock_client):
     # Setup the Mock Collection
     mock_collection = MagicMock()
@@ -32,7 +32,7 @@ def test_memorize_calls_upsert(mock_client):
     assert "test.txt" in args_str
     assert "This is some content" in args_str
 
-@patch('src.memory.chromadb.PersistentClient')
+@patch('src.services.memory.chromadb.PersistentClient')
 def test_forget_calls_delete(mock_client):
     mock_collection = MagicMock()
     mock_client.return_value.get_or_create_collection.return_value = mock_collection
