@@ -1,8 +1,8 @@
 import os
 import chromadb
 from typing import Dict, Any, List, Optional
-from src.config import DB_PATH
-from src.logger import logger
+from src.core.config import DB_PATH
+from src.core.logger import logger
 
 class MemoryEngine:
     def __init__(self) -> None:

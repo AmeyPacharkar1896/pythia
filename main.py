@@ -1,9 +1,14 @@
 import time
+import os
 from watchdog.observers import Observer
-from src.config import TARGET_FOLDER
-from src.handler import OracleHandler
+from src.core.config import TARGET_FOLDER
+from src.handlers.handler import OracleHandler
+from src.utils.file_ops import ensure_workspace
 
 if __name__ == "__main__":
+    # Ensure the target folder exists
+    ensure_workspace(TARGET_FOLDER)
+    
     print("---------------------------------------------------")
     print(f"👁️  PYTHIA v2.0 (Refactored) IS ONLINE")
     print(f"📂 Watching: {TARGET_FOLDER}")
