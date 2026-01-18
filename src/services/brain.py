@@ -1,9 +1,9 @@
 import time
 import google.generativeai as genai
 from typing import Optional, Dict, Any
-from src.config import API_KEY, MOCK_MODE, MODEL_NAME, TEMPERATURE, MAX_RETRIES, RETRY_DELAY_BASE
-from src.prompts import PERSONAS, DEFAULT_PERSONA, GENERATE_TEMPLATE, REFACTOR_TEMPLATE, VISUALIZE_TEMPLATE
-from src.logger import logger
+from src.core.config import API_KEY, MOCK_MODE, MODEL_NAME, TEMPERATURE, MAX_RETRIES, RETRY_DELAY_BASE
+from src.services.prompts import PERSONAS, DEFAULT_PERSONA, GENERATE_TEMPLATE, REFACTOR_TEMPLATE, VISUALIZE_TEMPLATE
+from src.core.logger import logger
 
 if not MOCK_MODE:
     genai.configure(api_key=API_KEY)

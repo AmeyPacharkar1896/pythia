@@ -1,7 +1,7 @@
 import time
 from watchdog.observers import Observer
-from src.config import TARGET_FOLDER
-from src.handler import OracleHandler
+from src.core.config import TARGET_FOLDER
+from src.handlers.handler import OracleHandler
 
 if __name__ == "__main__":
     print("---------------------------------------------------")
